@@ -2,7 +2,7 @@
 
 //--------------------------------------------------------------
 void faceApp::setup(){
-  // test
+
 }
 
 //--------------------------------------------------------------
@@ -56,6 +56,6 @@ void faceApp::gotMessage(ofMessage msg){
 }
 
 //--------------------------------------------------------------
-void faceApp::dragEvent(ofDragInfo dragInfo){ 
+void faceApp::dragEvent(ofDragInfo dragInfo){
 
 }
