@@ -2,10 +2,17 @@
 
 #include "ofMain.h"
 #include <ofVideoGrabber.h>
+#include <ofTrueTypeFont.h>
+#include "ofxUI.h"
 
 class faceApp : public ofBaseApp{
     private:
         ofVideoGrabber videoGrabber;
+        ofTrueTypeFont uiFont;
+        ofTrueTypeFont uiHeadingFont;
+        ofxUICanvas *gui;
+
+        bool showOverlays = true;
 
 	public:
 		void setup();
@@ -21,4 +28,6 @@ class faceApp : public ofBaseApp{
 		void windowResized(int w, int h);
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
+		void exit();
+		void guiEvent(ofxUIEventArgs &e);
 };
