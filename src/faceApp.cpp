@@ -21,8 +21,14 @@ void faceApp::setup(){
     gui->setFontSize(OFX_UI_FONT_MEDIUM, 12);
     gui->setFontSize(OFX_UI_FONT_SMALL, 8);
 
+    fpsLabel = new ofxUILabel("what", OFX_UI_FONT_SMALL);
+
     gui->addWidgetDown(new ofxUILabel("tuneables", OFX_UI_FONT_LARGE));
     gui->addWidgetDown(new ofxUIToggle(20, 20, true, "show overlays"));
+
+    gui->addWidgetDown(new ofxUILabel("values", OFX_UI_FONT_LARGE));
+    gui->addWidgetDown(fpsLabel);
+
     ofAddListener(gui->newGUIEvent, this, &faceApp::guiEvent);
 
 }
@@ -38,7 +44,8 @@ void faceApp::draw(){
     videoGrabber.draw(5,35);
 
     uiHeadingFont.drawString("facial recognition by jchillerup", 5,25);
-    uiFont.drawString("fps: "+ ofToString(ofGetFrameRate(), 2), 600, 600);
+
+    fpsLabel->setLabel("fps: "+ ofToString(ofGetFrameRate(), 2));
 
     if (showOverlays) {
         ofNoFill();

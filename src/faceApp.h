@@ -11,8 +11,10 @@ class faceApp : public ofBaseApp{
         ofTrueTypeFont uiFont;
         ofTrueTypeFont uiHeadingFont;
         ofxUICanvas *gui;
+        ofxUILabel *fpsLabel;
 
         bool showOverlays = true;
+
 
 	public:
 		void setup();
