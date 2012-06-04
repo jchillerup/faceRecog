@@ -1,13 +1,17 @@
 #pragma once
 
 #include "ofMain.h"
+#include <ofVideoGrabber.h>
 
 class faceApp : public ofBaseApp{
+    private:
+        ofVideoGrabber videoGrabber;
+
 	public:
 		void setup();
 		void update();
 		void draw();
-		
+
 		void keyPressed(int key);
 		void keyReleased(int key);
 		void mouseMoved(int x, int y);
