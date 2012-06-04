@@ -1,6 +1,4 @@
 #include "faceApp.h"
-#include <ofVideoGrabber.h>
-#include <ofTrueTypeFont.h>
 
 //--------------------------------------------------------------
 void faceApp::setup(){
@@ -9,11 +7,12 @@ void faceApp::setup(){
     uiFont.loadFont("FreeMono.ttf", 12, true, true);
     uiHeadingFont.loadFont("FreeMono.ttf", 18, true, true);
 
-    videoGrabber.listDevices();
-
     videoGrabber.initGrabber(640, 480);
 
+    // set up the "cheating" detector
+    haarFinder.setup("haarcascade_frontalface_default.xml");
 
+    grabbedImage = new ofImage();
 
     gui = new ofxUICanvas(724,0,300,768);
     gui->setFont("FreeMono.ttf");
@@ -35,22 +34,33 @@ void faceApp::setup(){
 
 //--------------------------------------------------------------
 void faceApp::update(){
+
     videoGrabber.grabFrame();
+
+    if (videoGrabber.isFrameNew() && showOverlays) {
+        grabbedImage->setFromPixels(videoGrabber.getPixels(), 640, 480, OF_IMAGE_COLOR);
+        haarFinder.findHaarObjects(*grabbedImage);
+    }
 }
 
 //--------------------------------------------------------------
 void faceApp::draw(){
 
-    videoGrabber.draw(5,35);
+    ofPushMatrix();
+    ofTranslate(5, 35, 0);
+    videoGrabber.draw(0,0);
+    if (showOverlays) {
+        ofNoFill();
+        for(int i = 0; i < haarFinder.blobs.size(); i++) {
+            ofRect( haarFinder.blobs[i].boundingRect );
+        }
+    }
+    ofPopMatrix();
 
     uiHeadingFont.drawString("facial recognition by jchillerup", 5,25);
 
     fpsLabel->setLabel("fps: "+ ofToString(ofGetFrameRate(), 2));
 
-    if (showOverlays) {
-        ofNoFill();
-        ofRect(10, 40, 40, 40);
-    }
 
 }
 
