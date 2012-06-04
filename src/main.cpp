@@ -1,4 +1,4 @@
-#include "testApp.h"
+#include "faceApp.h"
 #include "ofAppGlutWindow.h"
 
 //--------------------------------------------------------------
