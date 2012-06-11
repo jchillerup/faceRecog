@@ -1,7 +1,10 @@
 #include "faceApp.h"
+#include "OpenCvHaarFinder.h"
 
 //--------------------------------------------------------------
 void faceApp::setup(){
+
+
     ofBackground(200,0,0);
 
     camWidth = 320;
@@ -13,10 +16,7 @@ void faceApp::setup(){
     videoGrabber.initGrabber(camWidth, camHeight);
 
     // set up the "cheating" detector
-    haarFinder.setup("haarcascade_frontalface_default.xml");
-
-    //grabbedImage = new ofImage();
-    //processedImage = new ofImage();
+    haarFinder = new OpenCvHaarFinder();
 
     gui = new ofxUICanvas(724,0,300,768);
     gui->setFont("FreeMono.ttf");
@@ -55,7 +55,8 @@ void faceApp::update(){
         }
 
         grabbedImage.setFromPixels(gray_pixels, camWidth, camHeight, OF_IMAGE_GRAYSCALE);
-        haarFinder.findHaarObjects(grabbedImage);
+        haarFinder->getRectsFromImage(&grabbedImage);
+
     }
 }
 
@@ -70,8 +71,8 @@ void faceApp::draw(){
 
     if (showOverlays) {
         ofNoFill();
-        for(int i = 0; i < haarFinder.blobs.size(); i++) {
-            ofRect( haarFinder.blobs[i].boundingRect );
+        for(int i = 0; i < haarFinder->blobs.size(); i++) {
+            ofRect( haarFinder->blobs[i].boundingRect );
         }
     }
     ofPopMatrix(); // from processedImage to videoGrabber

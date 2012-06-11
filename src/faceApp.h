@@ -5,6 +5,7 @@
 #include <ofTrueTypeFont.h>
 #include "ofxUI.h"
 #include "ofxCvHaarFinder.h"
+#include "OpenCvHaarFinder.h"
 
 class faceApp : public ofBaseApp{
     private:
@@ -13,8 +14,8 @@ class faceApp : public ofBaseApp{
         ofTrueTypeFont uiHeadingFont;
         ofxUICanvas *gui;
         ofxUILabel *fpsLabel;
-        ofxCvHaarFinder haarFinder;
         ofImage grabbedImage;
+        OpenCvHaarFinder * haarFinder;
 
         bool showOverlays = true;
 

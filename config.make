@@ -10,8 +10,6 @@ OF_ROOT = ../../..
 # for example search paths like:
 # USER_CFLAGS = -I src/objects
 
-#USER_CFLAGS  = -I../../../addons/ofxUI/src -I../../../addons/ofxXmlSettings/libs -I ../../../addons/ofxXmlSettings/src  -I../../../addons/ofxOpenCv/src -I../../../addons/ofxOpenCv/libs/opencv/include -I/usr/include/opencv
-
 USER_CFLAGS =
 
 
