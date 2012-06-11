@@ -14,9 +14,12 @@ class faceApp : public ofBaseApp{
         ofxUICanvas *gui;
         ofxUILabel *fpsLabel;
         ofxCvHaarFinder haarFinder;
-        ofImage *grabbedImage;
+        ofImage grabbedImage;
 
         bool showOverlays = true;
+
+        int camWidth;
+        int camHeight;
 
 
 	public:

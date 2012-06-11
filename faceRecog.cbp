@@ -27,16 +27,79 @@
 				<Option projectLinkerOptionsRelation="2" />
 			</Target>
 		</Build>
+		<Unit filename="../../../addons/ofxOpenCv/src/ofxCvBlob.h" />
+		<Unit filename="../../../addons/ofxOpenCv/src/ofxCvColorImage.cpp" />
+		<Unit filename="../../../addons/ofxOpenCv/src/ofxCvColorImage.h" />
+		<Unit filename="../../../addons/ofxOpenCv/src/ofxCvConstants.h" />
+		<Unit filename="../../../addons/ofxOpenCv/src/ofxCvContourFinder.cpp" />
+		<Unit filename="../../../addons/ofxOpenCv/src/ofxCvContourFinder.h" />
+		<Unit filename="../../../addons/ofxOpenCv/src/ofxCvFloatImage.cpp" />
+		<Unit filename="../../../addons/ofxOpenCv/src/ofxCvFloatImage.h" />
+		<Unit filename="../../../addons/ofxOpenCv/src/ofxCvGrayscaleImage.cpp" />
+		<Unit filename="../../../addons/ofxOpenCv/src/ofxCvGrayscaleImage.h" />
+		<Unit filename="../../../addons/ofxOpenCv/src/ofxCvHaarFinder.cpp" />
+		<Unit filename="../../../addons/ofxOpenCv/src/ofxCvHaarFinder.h" />
+		<Unit filename="../../../addons/ofxOpenCv/src/ofxCvImage.cpp" />
+		<Unit filename="../../../addons/ofxOpenCv/src/ofxCvImage.h" />
+		<Unit filename="../../../addons/ofxOpenCv/src/ofxCvMain.h" />
+		<Unit filename="../../../addons/ofxOpenCv/src/ofxCvShortImage.cpp" />
+		<Unit filename="../../../addons/ofxOpenCv/src/ofxCvShortImage.h" />
+		<Unit filename="../../../addons/ofxOpenCv/src/ofxOpenCv.h" />
+		<Unit filename="../../../addons/ofxUI/src/ofxUI.h" />
+		<Unit filename="../../../addons/ofxUI/src/ofxUI2DPad.h" />
+		<Unit filename="../../../addons/ofxUI/src/ofxUIBiLabelSlider.h" />
+		<Unit filename="../../../addons/ofxUI/src/ofxUIButton.h" />
+		<Unit filename="../../../addons/ofxUI/src/ofxUICanvas.h" />
+		<Unit filename="../../../addons/ofxUI/src/ofxUICircleSlider.h" />
+		<Unit filename="../../../addons/ofxUI/src/ofxUICustomImageButton.h" />
+		<Unit filename="../../../addons/ofxUI/src/ofxUIDropDownList.h" />
+		<Unit filename="../../../addons/ofxUI/src/ofxUIEventArgs.h" />
+		<Unit filename="../../../addons/ofxUI/src/ofxUIFPS.h" />
+		<Unit filename="../../../addons/ofxUI/src/ofxUIFPSSlider.h" />
+		<Unit filename="../../../addons/ofxUI/src/ofxUIImage.h" />
+		<Unit filename="../../../addons/ofxUI/src/ofxUIImageButton.h" />
+		<Unit filename="../../../addons/ofxUI/src/ofxUIImageSampler.h" />
+		<Unit filename="../../../addons/ofxUI/src/ofxUIImageSlider.h" />
+		<Unit filename="../../../addons/ofxUI/src/ofxUIImageToggle.h" />
+		<Unit filename="../../../addons/ofxUI/src/ofxUILabel.h" />
+		<Unit filename="../../../addons/ofxUI/src/ofxUILabelButton.h" />
+		<Unit filename="../../../addons/ofxUI/src/ofxUILabelToggle.h" />
+		<Unit filename="../../../addons/ofxUI/src/ofxUIMinimalSlider.h" />
+		<Unit filename="../../../addons/ofxUI/src/ofxUIMovingGraph.h" />
+		<Unit filename="../../../addons/ofxUI/src/ofxUIMultiImageButton.h" />
+		<Unit filename="../../../addons/ofxUI/src/ofxUIMultiImageSlider.h" />
+		<Unit filename="../../../addons/ofxUI/src/ofxUIMultiImageToggle.h" />
+		<Unit filename="../../../addons/ofxUI/src/ofxUINumberDialer.h" />
+		<Unit filename="../../../addons/ofxUI/src/ofxUIRadio.h" />
+		<Unit filename="../../../addons/ofxUI/src/ofxUIRangeSlider.h" />
+		<Unit filename="../../../addons/ofxUI/src/ofxUIRectangle.h" />
+		<Unit filename="../../../addons/ofxUI/src/ofxUIRotarySlider.h" />
+		<Unit filename="../../../addons/ofxUI/src/ofxUIScrollableCanvas.h" />
+		<Unit filename="../../../addons/ofxUI/src/ofxUISlider.h" />
+		<Unit filename="../../../addons/ofxUI/src/ofxUISpacer.h" />
+		<Unit filename="../../../addons/ofxUI/src/ofxUISpectrum.h" />
+		<Unit filename="../../../addons/ofxUI/src/ofxUITextInput.h" />
+		<Unit filename="../../../addons/ofxUI/src/ofxUIToggle.h" />
+		<Unit filename="../../../addons/ofxUI/src/ofxUIToggleMatrix.h" />
+		<Unit filename="../../../addons/ofxUI/src/ofxUIWaveform.h" />
+		<Unit filename="../../../addons/ofxUI/src/ofxUIWidget.h" />
+		<Unit filename="../../../addons/ofxUI/src/ofxUIWidgetWithLabel.h" />
+		<Unit filename="../../../addons/ofxXmlSettings/libs/tinyxml.cpp" />
+		<Unit filename="../../../addons/ofxXmlSettings/libs/tinyxml.h" />
+		<Unit filename="../../../addons/ofxXmlSettings/libs/tinyxmlerror.cpp" />
+		<Unit filename="../../../addons/ofxXmlSettings/libs/tinyxmlparser.cpp" />
+		<Unit filename="../../../addons/ofxXmlSettings/src/ofxXmlSettings.cpp" />
+		<Unit filename="../../../addons/ofxXmlSettings/src/ofxXmlSettings.h" />
 		<Unit filename="config.make">
 			<Option virtualFolder="build config" />
-		</Unit>
-		<Unit filename="src/main.cpp">
-			<Option virtualFolder="src/" />
 		</Unit>
 		<Unit filename="src/faceApp.cpp">
 			<Option virtualFolder="src/" />
 		</Unit>
 		<Unit filename="src/faceApp.h">
+			<Option virtualFolder="src/" />
+		</Unit>
+		<Unit filename="src/main.cpp">
 			<Option virtualFolder="src/" />
 		</Unit>
 		<Extensions>
