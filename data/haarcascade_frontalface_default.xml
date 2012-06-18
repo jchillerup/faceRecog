@@ -56,11 +56,15 @@
             <feature>
               <rects>
                 <_>6 4 12 9 -1.</_>
-                <_>6 7 12 3 3.</_></rects>
-              <tilted>0</tilted></feature>
+                <_>6 7 12 3 3.</_>
+              </rects>
+              <tilted>0</tilted>
+            </feature>
             <threshold>-0.0315119996666908</threshold>
             <left_val>2.0875380039215088</left_val>
-            <right_val>-2.2172100543975830</right_val></_></_>
+            <right_val>-2.2172100543975830</right_val>
+	  </_>
+        </_>
         <_>
           <!-- tree 1 -->
           <_>

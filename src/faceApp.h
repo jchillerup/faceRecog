@@ -6,6 +6,8 @@
 #include "ofxUI.h"
 #include "ofxCvHaarFinder.h"
 #include "OpenCvHaarFinder.h"
+#include "JCHaarFinder.h"
+#include "ofxXmlSettings.h"
 
 class faceApp : public ofBaseApp{
     private:
@@ -15,13 +17,14 @@ class faceApp : public ofBaseApp{
         ofxUICanvas *gui;
         ofxUILabel *fpsLabel;
         ofImage grabbedImage;
-        OpenCvHaarFinder * haarFinder;
+        JCHaarFinder * haarFinder;
 
         bool showOverlays = true;
 
         int camWidth;
         int camHeight;
-
+        float brightness;
+        float contrast;
 
 	public:
 		void setup();
