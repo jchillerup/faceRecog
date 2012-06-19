@@ -25,6 +25,8 @@ class faceApp : public ofBaseApp{
         int camHeight;
         float brightness;
         float contrast;
+        bool frameNew;
+        ofImage * probeImage;
 
 	public:
 		void setup();
@@ -42,4 +44,5 @@ class faceApp : public ofBaseApp{
 		void gotMessage(ofMessage msg);
 		void exit();
 		void guiEvent(ofxUIEventArgs &e);
+		void doHaarStuff();
 };

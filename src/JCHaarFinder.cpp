@@ -49,7 +49,7 @@ void JCHaarFinder::loadFeatures(char* fileName) {
         featureXML.pushTag("trees");
 
         int numberOfTrees = featureXML.getNumTags("_");
-        ofLog(OF_LOG_NOTICE, "Stage #"+ofToString(curStage)+" has "+ofToString(numberOfTrees)+ " trees.");
+        //ofLog(OF_LOG_NOTICE, "Stage #"+ofToString(curStage)+" has "+ofToString(numberOfTrees)+ " trees.");
         for (int curTree = 0; curTree<numberOfTrees; curTree++) {
             feature curFeatureStruct;
 
@@ -99,6 +99,11 @@ void JCHaarFinder::loadFeatures(char* fileName) {
         }
 
         featureXML.popTag(); // pop trees
+        
+        curStageStruct.threshold = featureXML.getValue("stage_threshold", 0.0);
+        
+        //ofLog(OF_LOG_NOTICE, "Stage threshold: "+ofToString(curStageStruct.threshold, 8));
+        
         featureXML.popTag(); // pop current stage
 
         // add the stage to the cascade
@@ -166,11 +171,117 @@ void JCHaarFinder::draw() {
 // Returns a vector of rectangles that pass the requirements for faces.
 vector<ofxCvBlob> JCHaarFinder::getRectsFromImage(ofImage* inputImage) {
     curImage = inputImage;
-
+    
+    float scale = 1;
+    float scaleMultiplier = 1.25;
+    int   area = curImage->getWidth() * curImage->getHeight(), 
+          right_count = 0, 
+          left_count = 0;
+    blobs.clear();
+    
+    
     generateIIArray();
 
-    //blobs.push_back(makeBlob(50, 50, 50, 50));
-    //blobs.push_back(makeBlob(75, 75, 50, 50));
+    
+    /*
+     * Strategy: Loop through the image such that a window moves over the
+     * picture, checking stages. Once the window has moved through the image
+     * scale it a bit up, and re-run the algorithm. 
+     *
+     * The values to be for'ed over are nested as follows:
+     *
+     * the scale of the cascade window
+     * window's position on y axis
+     * window's position on x axis
+     * stages of the cascade
+     * features of the stage
+    */
+        
+    // This implementation keeps enlarging the window until it is bigger than the picture.
+    for (scale = 1; scale*casc.height <= curImage->getHeight() || scale*casc.width <= curImage->getWidth(); scale *= scaleMultiplier) {
+        //ofLog(OF_LOG_NOTICE, "Search window height: " + ofToString(scale*casc.height));
+        
+        area = scale*casc.height * scale*casc.width;
+        
+        //ofLog(OF_LOG_NOTICE, "Search window area: "+ofToString(area, 2));
+        
+        // Keep moving the window down as long as its offset and its height are within the image. Likewise to the left
+        // As an experiment, we're shifting the window in chunks equal to about a tenth of the current window height and width, respectively.
+        for (int offsetY = 0; (offsetY+scale*casc.height) < curImage->getHeight(); offsetY += (int) ((scale*casc.height)/10)  ) {
+            for (int offsetX = 0; (offsetX + scale*casc.width) < curImage->getWidth(); offsetX += (int) ((scale*casc.width)/10)) {
+                bool passed = true;
+                
+                for (int curStageIdx = 0; curStageIdx < casc.stages.size(); curStageIdx++) {
+                    if (passed == false) break;
+                    
+                    stage* s = &casc.stages.at(curStageIdx);
+                    float stage_sum = 0.0;
+                    
+                    if (curStageIdx > 6) {
+                        ofLog(OF_LOG_NOTICE, "Current stage: "+ofToString(curStageIdx));
+                    }
+                    
+                    for (int featureIdx = 0; featureIdx < s->features.size(); featureIdx++) {
+                        feature* f = & (s->features.at(featureIdx));
+                        
+                        float feature_sum = 0.0;
+                        
+                        for (int rectangleIdx = 0; rectangleIdx < f->rectangles.size(); rectangleIdx++) {
+                            featureRect* r = & ( f->rectangles.at(rectangleIdx));
+                            
+                            int x1 = offsetX + r->rectangle.x*scale,
+                                y1 = offsetY + r->rectangle.y*scale,
+                                x2 = x1 + r->rectangle.width*scale,
+                                y2 = y1 + r->rectangle.height*scale;
+                            
+                            feature_sum += (ii(x2, y2) - ii(x1, y2) - ii(x2, y1) + ii(x1, y1)) * r->weight;
+                            /*
+                            if (scale == 1 && offsetY == 0 && offsetX == 0 && curStageIdx == 0 & featureIdx == 0) {
+                                ofLog(OF_LOG_NOTICE, "featureSum = "+ofToString(feature_sum, 5));
+                            }
+                            */
+                            
+                        }
+                        
+                        if (feature_sum/area < s->threshold) {
+                            //ofLog(OF_LOG_NOTICE, "adding left value. value: " + ofToString(feature_sum/area, 10) + " thrshold: "+ofToString(s->threshold, 10));
+                            stage_sum += f->leftVal;
+                            left_count++;
+                        } else {
+                            //ofLog(OF_LOG_NOTICE, "adding right value. value: " + ofToString(feature_sum/area, 10) + " thrshold: "+ofToString(s->threshold, 10));
+                            stage_sum += f->rightVal;
+                            right_count++;
+                        }
+                        
+                    }
+                    
+                    //ofLog(OF_LOG_NOTICE, "Stage sum: "+ofToString(stage_sum, 6)+", threshold: "+ofToString(s->threshold, 6));
+                    
+                    passed = (stage_sum > s->threshold);
+                    
+                    if (!passed && curStageIdx > 6) {
+                        ofLog(OF_LOG_NOTICE, "Stage " + ofToString(curStageIdx) + "failed. Stage sum: "+ofToString(stage_sum)+", required: "+ofToString(s->threshold));
+                    }
+                }
+            
+                if (passed) {
+                    ofLog(OF_LOG_NOTICE, "detected face (maybe)!");
+                    blobs.push_back(makeBlob(offsetX, offsetY, scale*casc.width, scale*casc.height));
+                }
+            }
+        
+        }
+        
+        
+    }
+    
+    // http://stackoverflow.com/questions/978742/what-do-the-left-and-right-values-mean-in-the-haar-cascade-xml-files
+
+    // dblobs.push_back(makeBlob(50, 50, 50, 50));
+    // blobs.push_back(makeBlob(75, 75, 50, 50));
+
+
+    ofLog(OF_LOG_NOTICE, "Left count: "+ofToString(left_count) + ", right count: "+ofToString(right_count));
 
     return blobs;
 }
