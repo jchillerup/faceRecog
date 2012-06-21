@@ -35,16 +35,17 @@ class JCHaarFinder
         virtual ~JCHaarFinder();
         vector<ofxCvBlob> getRectsFromImage(ofImage* inputImage);
         vector<ofxCvBlob> blobs;
-        void update();
         void draw();
     protected:
     private:
         inline int ii(int x, int y);
+        inline int ii2(int x, int y);
         inline int i(int x, int y);
         void generateIIArray();
         void loadFeatures(char* fileName);
         char* defaultFeature;
         int * _iiArray;
+        int * _ii2Array;
         ofImage * curImage;
         ofImage * iImage;
         int tmp_ii;

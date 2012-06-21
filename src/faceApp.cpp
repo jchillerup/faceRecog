@@ -41,18 +41,30 @@ void faceApp::setup(){
 
     ofSetWindowTitle("face detection by jens christian hillerup");
     
-    probeImage = new ofImage("lena01.jpg");
+    probeImage = new ofImage();
+    /*
+    probeImage = new ofImage("lena.jpg");
     camWidth = probeImage->getWidth();
     camHeight = probeImage->getHeight();
-    frameNew = true;
-
+    */
+    frameNew = false;
 }
 
 //--------------------------------------------------------------
-void faceApp::update(){
+void faceApp::update(){  
+    
+    
     videoGrabber.grabFrame();
-
-    haarFinder->update();
+    
+    if (videoGrabber.isFrameNew()) {
+        probeImage->setFromPixels(videoGrabber.getPixels(), videoGrabber.getWidth(), videoGrabber.getHeight(), OF_IMAGE_COLOR);
+        frameNew = true;
+    }
+    
+    
+    if (frameNew) {
+        doHaarStuff();
+    }
 }
 
 //--------------------------------------------------------------
@@ -86,47 +98,45 @@ void faceApp::draw(){
 }
 
 void faceApp::doHaarStuff() {
-    ofLog(OF_LOG_NOTICE, "Doing Haar calculations");
-    
     // get pixels as char array and make a grayscale buffer from them
     int total_pixels = camWidth*camHeight;
-    int i = 0;
 
     //unsigned char* rgb_pixels   = videoGrabber.getPixels();
     unsigned char* rgb_pixels = probeImage->getPixels();
     unsigned char gray_pixels[total_pixels];
 
-    for (; i<total_pixels; i++) {
-            
+    for (int i = 0; i<total_pixels; i++) {
         // First, pick out a gray value from the RGB representation
         float value = 0.3*rgb_pixels[3*i+0] + 0.59*rgb_pixels[3*i+1] + 0.11*rgb_pixels[3*i+2];
-
+        
         // Then, map it from [0; 255] -> [0; 1]
         value /= 255;
 
-        // Then, adjust brightness and contrast. Code copied from WikiPedia which in turn copied it from GIMP.
+        // Then, adjust brightness and contrast. Code copied from Wikipedia which in turn copied it from GIMP.
         // https://en.wikipedia.org/wiki/Image_editing#Contrast_change_and_brightening
         if (brightness < 0.0)
             value = value * ( 1.0 + brightness);
         else
             value = value + ((1 - value) * brightness);
-        value = (value - 0.5) * (tan ((contrast + 1) * PI/4) ) + 0.5;
+        
+        //value = (value - 0.5) * (tan ((contrast + 1) * PI/4) ) + 0.5;
         // end copy
 
         // Map value back to [0; 255]
         value *= 255;
+        
         gray_pixels[i] = (int) value;
     }
 
     grabbedImage.setFromPixels(gray_pixels, camWidth, camHeight, OF_IMAGE_GRAYSCALE);
-
+    
     haarFinder->getRectsFromImage(&grabbedImage);
 }
 
 
 //--------------------------------------------------------------
 void faceApp::keyPressed(int key){
-    doHaarStuff();
+    
 }
 
 //--------------------------------------------------------------

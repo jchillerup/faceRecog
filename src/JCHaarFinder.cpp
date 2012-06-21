@@ -10,10 +10,9 @@ JCHaarFinder::JCHaarFinder()
     //ctor
     iImage = new ofImage();
 
-    _iiArray = (int*)malloc(320 * 240 * sizeof(int));
-
     defaultFeature = "haarcascade_frontalface_default.xml";
     loadFeatures(defaultFeature);
+    
 }
 
 // Loads features from a Haar cascade XML file in the OpenCV format.
@@ -116,56 +115,8 @@ void JCHaarFinder::loadFeatures(char* fileName) {
     featureXML.popTag(); // pop opencv_storage
 }
 
-void JCHaarFinder::update() {
-    /*
-    iImage = new ofImage();
-    iImage->clone(curImage);
-
-    for (int i = 0; i < (iImage->getWidth()*iImage->getHeight()) ; i++) {
-        int x = i / iImage->getWidth();
-        int y = i % iImage->getWidth();
-
-        iImage->getPixels()[i] = ii(x, y);
-    }
-    */
-
-    //tmp_ii = ii(0, 0);
-}
-
 void JCHaarFinder::draw() {
-    float scale = 1;
-    
-    ofPushStyle();
-    
-    ofScale(scale, scale, 0);
-    
-    ofSetColor(255,0,0);
-    ofSetLineWidth(2);
-    ofRect(0,0,24,24);
-    ofPopStyle();
-    
-    stage curStage = casc.stages.at(0);
-    feature curFeature = curStage.features.at(1);
-    
-    for (int i = 0; i<curFeature.rectangles.size(); i++) {
-        featureRect rect = curFeature.rectangles.at(i);
-    
-        ofPushStyle();
-        ofFill();
-        if (rect.weight < 0) {
-            ofSetColor(0,0,0);
-        } else {
-            ofSetColor(255,255,255);
-        }
-        ofRect( rect.rectangle );
-        ofPopStyle();
-    }
-
-    
-    
-    
-    //if (curImage != NULL) 
-        //curImage->draw(0,0);
+    // Used while debugging; draws over the processed image.
 }
 
 // Returns a vector of rectangles that pass the requirements for faces.
@@ -174,15 +125,10 @@ vector<ofxCvBlob> JCHaarFinder::getRectsFromImage(ofImage* inputImage) {
     
     float scale = 1;
     float scaleMultiplier = 1.25;
-    int   area = curImage->getWidth() * curImage->getHeight(), 
-          right_count = 0, 
-          left_count = 0;
     blobs.clear();
-    
     
     generateIIArray();
 
-    
     /*
      * Strategy: Loop through the image such that a window moves over the
      * picture, checking stages. Once the window has moved through the image
@@ -195,15 +141,17 @@ vector<ofxCvBlob> JCHaarFinder::getRectsFromImage(ofImage* inputImage) {
      * window's position on x axis
      * stages of the cascade
      * features of the stage
-    */
+     * rectangles of the feature
+     * 
+     * Since we don't support larger trees than the ones which only have a
+     * root node, we can ignore traversing trees and just consider a list
+     * of rectangles for any one feature.
+     */
         
     // This implementation keeps enlarging the window until it is bigger than the picture.
     for (scale = 1; scale*casc.height <= curImage->getHeight() || scale*casc.width <= curImage->getWidth(); scale *= scaleMultiplier) {
-        //ofLog(OF_LOG_NOTICE, "Search window height: " + ofToString(scale*casc.height));
         
-        area = scale*casc.height * scale*casc.width;
-        
-        //ofLog(OF_LOG_NOTICE, "Search window area: "+ofToString(area, 2));
+        int window_area = scale*casc.height * scale*casc.width;
         
         // Keep moving the window down as long as its offset and its height are within the image. Likewise to the left
         // As an experiment, we're shifting the window in chunks equal to about a tenth of the current window height and width, respectively.
@@ -211,116 +159,130 @@ vector<ofxCvBlob> JCHaarFinder::getRectsFromImage(ofImage* inputImage) {
             for (int offsetX = 0; (offsetX + scale*casc.width) < curImage->getWidth(); offsetX += (int) ((scale*casc.width)/10)) {
                 bool passed = true;
                 
+                // *** LOOPING OVER STAGES
                 for (int curStageIdx = 0; curStageIdx < casc.stages.size(); curStageIdx++) {
                     if (passed == false) break;
                     
                     stage* s = &casc.stages.at(curStageIdx);
                     float stage_sum = 0.0;
                     
-                    if (curStageIdx > 6) {
-                        ofLog(OF_LOG_NOTICE, "Current stage: "+ofToString(curStageIdx));
-                    }
-                    
+                    // *** LOOPING OVER FEATURES
                     for (int featureIdx = 0; featureIdx < s->features.size(); featureIdx++) {
                         feature* f = & (s->features.at(featureIdx));
                         
                         float feature_sum = 0.0;
                         
+                        // These coordinates are for the sliding window
+                        int px1 = offsetX,
+                            py1 = offsetY,
+                            px2 = offsetX + scale*casc.width,
+                            py2 = offsetY + scale*casc.height;
+                        
+                        float mean   = ((float) (ii(px2, py2)  + ii(px1, py1)  - ii(px1, py2)  - ii(px2, py1)))  / window_area;
+                        float stddev = (ii2(px2, py2) + ii2(px1, py1) - ii2(px1, py2) - ii2(px2, py1)) / window_area - mean*mean;
+                        stddev=(stddev>1)?sqrt(stddev):1;
+                        
+                        
+                        // *** LOOPING OVER RECTANGLES
                         for (int rectangleIdx = 0; rectangleIdx < f->rectangles.size(); rectangleIdx++) {
                             featureRect* r = & ( f->rectangles.at(rectangleIdx));
                             
-                            int x1 = offsetX + r->rectangle.x*scale,
-                                y1 = offsetY + r->rectangle.y*scale,
-                                x2 = x1 + r->rectangle.width*scale,
-                                y2 = y1 + r->rectangle.height*scale;
+                            // These coordinates are for the rectangles inside the sliding window. The coordinates 
+                            // are absolute; i.e. they share the same origin as the coordinates of the window.
+                            int x1 = offsetX + (r->rectangle.x * scale),
+                                y1 = offsetY + (r->rectangle.y * scale),
+                                x2 = x1      +  r->rectangle.width * scale,
+                                y2 = y1      +  r->rectangle.height * scale;
                             
-                            feature_sum += (ii(x2, y2) - ii(x1, y2) - ii(x2, y1) + ii(x1, y1)) * r->weight;
-                            /*
-                            if (scale == 1 && offsetY == 0 && offsetX == 0 && curStageIdx == 0 & featureIdx == 0) {
-                                ofLog(OF_LOG_NOTICE, "featureSum = "+ofToString(feature_sum, 5));
-                            }
-                            */
+                            int thisRect = (ii(x2, y2) + ii(x1, y1) - ii(x1, y2) - ii(x2, y1)) * r->weight;
                             
+                            feature_sum += thisRect;
                         }
                         
-                        if (feature_sum/area < s->threshold) {
-                            //ofLog(OF_LOG_NOTICE, "adding left value. value: " + ofToString(feature_sum/area, 10) + " thrshold: "+ofToString(s->threshold, 10));
+                        // Determine in which direction the cascade should "fall". If the feature sum is less than
+                        // its threshold, fall left, otherwise right.
+                        // http://stackoverflow.com/questions/978742/what-do-the-left-and-right-values-mean-in-the-haar-cascade-xml-files
+                        if (feature_sum/window_area < f->threshold*stddev) {
                             stage_sum += f->leftVal;
-                            left_count++;
                         } else {
-                            //ofLog(OF_LOG_NOTICE, "adding right value. value: " + ofToString(feature_sum/area, 10) + " thrshold: "+ofToString(s->threshold, 10));
                             stage_sum += f->rightVal;
-                            right_count++;
-                        }
-                        
+                        }                        
                     }
                     
-                    //ofLog(OF_LOG_NOTICE, "Stage sum: "+ofToString(stage_sum, 6)+", threshold: "+ofToString(s->threshold, 6));
-                    
+                    // The stage is passed if its sum is above its threshold.
                     passed = (stage_sum > s->threshold);
-                    
-                    if (!passed && curStageIdx > 6) {
-                        ofLog(OF_LOG_NOTICE, "Stage " + ofToString(curStageIdx) + "failed. Stage sum: "+ofToString(stage_sum)+", required: "+ofToString(s->threshold));
-                    }
                 }
             
+                // passed will be true iff all stages passed; if so, we detected a face.
                 if (passed) {
                     ofLog(OF_LOG_NOTICE, "detected face (maybe)!");
                     blobs.push_back(makeBlob(offsetX, offsetY, scale*casc.width, scale*casc.height));
                 }
             }
-        
         }
-        
-        
     }
     
-    // http://stackoverflow.com/questions/978742/what-do-the-left-and-right-values-mean-in-the-haar-cascade-xml-files
-
-    // dblobs.push_back(makeBlob(50, 50, 50, 50));
-    // blobs.push_back(makeBlob(75, 75, 50, 50));
-
-
-    ofLog(OF_LOG_NOTICE, "Left count: "+ofToString(left_count) + ", right count: "+ofToString(right_count));
-
     return blobs;
 }
 
 
-// Calculates the array of values used as the !!! image, lest values need calculation.
+// Calculates the array of values used as the integral image, lest values need calculation.
 void JCHaarFinder::generateIIArray() {
-    int row = 0,
-        col = 0,
-        rowsum = 0,
-        width = curImage->getWidth(),
-        height = curImage->getHeight();
-
-
-    // if true, the gnerated II array will be printed (slow)
+    // if true, the gnerated II array will be printed to a file after calculation
     bool takeSnapshot = false;
 
-    for (col=0; col < width; col++) {
-        rowsum = 0;
+    int width = curImage->getWidth(),
+        height = curImage->getHeight();
+    
+    if (_iiArray == NULL) {
+        free(_iiArray);
+    }
+    
+    _iiArray = (int*) malloc(width * height * sizeof(int));
+    _ii2Array = (int*) malloc(width * height * sizeof(int));
 
-        for(row=0; row < height; row++) {
-            rowsum += i(row, col); // this is s(x,y)
-
-            if (col > 0) {
-                _iiArray[row*height+col] = _iiArray[row*height+(col - 1)] + rowsum;
-            } else {
-                _iiArray[row*height+col] = 0                              + rowsum;
-            }
-
-            if (takeSnapshot) {
-                printf("%d,", _iiArray[row*height+col]);
-            }
-        }
-        if (takeSnapshot) {
-            printf("\n");
-        }
+    for (int i = 0; i<width*height; i++) {
+        _iiArray[i] = 0;
+        _ii2Array[i] = 0;
     }
 
-    takeSnapshot = false;
+    for (int row=0; row < height; row++) {
+        int colsum = 0;
+        int colsum2 = 0;
+        
+        for(int col=0; col < width; col++) {
+            colsum += i(col, row);
+            colsum2 += i(col, row)*i(col, row);
+            
+            if (row > 0) {
+                _iiArray[row*width + col] = colsum + ii(col, row-1);
+                _ii2Array[row*width + col] = colsum2 + ii2(col, row-1);
+            } else {
+                _iiArray[row*width + col] = colsum;
+                _ii2Array[row*width + col] = colsum2;
+            }
+        }
+    }
+    
+    // Debug functionality that writes out the integral images in CSV structures.
+    if (takeSnapshot) {
+        ofFile iiFile;
+        ofFile ii2File;
+        iiFile.open(ofToDataPath("ii.csv"), ofFile::WriteOnly, false);
+        ii2File.open(ofToDataPath("ii2.csv"), ofFile::WriteOnly, false);
+        
+        for (int row= 0; row<height; row++) {
+            for (int col = 0; col<width; col++) {
+                iiFile << ofToString(ii(col, row)) + ";";
+                ii2File << ofToString(ii2(col, row)) + ";";
+            }
+            
+            iiFile << endl;
+            ii2File << endl;
+        }
+        
+        iiFile.close();       
+    }
 }
 
 ofxCvBlob JCHaarFinder::makeBlob(int x, int y, int w, int h) {
@@ -342,7 +304,15 @@ inline int JCHaarFinder::i(int x, int y) {
 
 // Makes a look-up in the integral image table (shorthand instead of accessing directly)
 inline int JCHaarFinder::ii(int x, int y) {
-    return _iiArray[(int)(y*curImage->getHeight()+x)];
+    if (x<0 || y<0) {return 0;}
+    
+    return _iiArray[(int)(y*curImage->getWidth()+x)];
+}
+
+inline int JCHaarFinder::ii2(int x, int y) {
+    if (x<0 || y<0) {return 0;}
+    
+    return _ii2Array[(int)(y*curImage->getWidth()+x)];
 }
 
 // Destructor

@@ -93,6 +93,18 @@
 		<Unit filename="config.make">
 			<Option virtualFolder="build config" />
 		</Unit>
+		<Unit filename="src/JCHaarFinder.cpp">
+			<Option virtualFolder="src/" />
+		</Unit>
+		<Unit filename="src/JCHaarFinder.h">
+			<Option virtualFolder="src/" />
+		</Unit>
+		<Unit filename="src/OpenCvHaarFinder.cpp">
+			<Option virtualFolder="src/" />
+		</Unit>
+		<Unit filename="src/OpenCvHaarFinder.h">
+			<Option virtualFolder="src/" />
+		</Unit>
 		<Unit filename="src/faceApp.cpp">
 			<Option virtualFolder="src/" />
 		</Unit>
