@@ -48,7 +48,6 @@ void JCHaarFinder::loadFeatures(char* fileName) {
         featureXML.pushTag("trees");
 
         int numberOfTrees = featureXML.getNumTags("_");
-        //ofLog(OF_LOG_NOTICE, "Stage #"+ofToString(curStage)+" has "+ofToString(numberOfTrees)+ " trees.");
         for (int curTree = 0; curTree<numberOfTrees; curTree++) {
             feature curFeatureStruct;
 
@@ -70,8 +69,6 @@ void JCHaarFinder::loadFeatures(char* fileName) {
                 
                 sscanf(rectangleString.c_str(), "%d %d %d %d %d", &x, &y, &width, &height, &rectangleStruct.weight);
                 
-                // ofLog(OF_LOG_NOTICE, ofToString(x)+" "+ofToString(y)+" "+ofToString(width)+" "+ofToString(height)+" "+ofToString(rectangleStruct.weight));
-                
                 // populate the ofRectangle
                 rectangle.set(x, y, width, height);
                 rectangleStruct.rectangle = rectangle;
@@ -86,10 +83,6 @@ void JCHaarFinder::loadFeatures(char* fileName) {
             curFeatureStruct.leftVal   = featureXML.getValue("left_val", 0.0);
             curFeatureStruct.rightVal  = featureXML.getValue("right_val", 0.0);
             
-            // ofLog(OF_LOG_NOTICE, "threshold "+ofToString(curFeatureStruct.threshold, 4));
-            // ofLog(OF_LOG_NOTICE, "left_val  "+ofToString(curFeatureStruct.leftVal, 4));
-            // ofLog(OF_LOG_NOTICE, "right_val "+ofToString(curFeatureStruct.rightVal, 4));
-            
             featureXML.popTag(); // pop root node
             featureXML.popTag(); // pop current tree
 
@@ -100,8 +93,6 @@ void JCHaarFinder::loadFeatures(char* fileName) {
         featureXML.popTag(); // pop trees
         
         curStageStruct.threshold = featureXML.getValue("stage_threshold", 0.0);
-        
-        //ofLog(OF_LOG_NOTICE, "Stage threshold: "+ofToString(curStageStruct.threshold, 8));
         
         featureXML.popTag(); // pop current stage
 
