@@ -179,9 +179,7 @@ vector<ofxCvBlob> JCHaarFinder::getRectsFromImage(ofImage* inputImage) {
                             py2 = offsetY + scale*casc.height;
                         
                         float mean   = ((float) (ii(px2, py2)  + ii(px1, py1)  - ii(px1, py2)  - ii(px2, py1)))  / window_area;
-                        float stddev = (ii2(px2, py2) + ii2(px1, py1) - ii2(px1, py2) - ii2(px2, py1)) / window_area - mean*mean;
-                        stddev=(stddev>1)?sqrt(stddev):1;
-                        
+                        float stddev = sqrt((ii2(px2, py2) + ii2(px1, py1) - ii2(px1, py2) - ii2(px2, py1)) / window_area - mean*mean);
                         
                         // *** LOOPING OVER RECTANGLES
                         for (int rectangleIdx = 0; rectangleIdx < f->rectangles.size(); rectangleIdx++) {
