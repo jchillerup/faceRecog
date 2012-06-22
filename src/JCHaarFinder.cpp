@@ -236,19 +236,31 @@ void JCHaarFinder::generateIIArray() {
     }
 
     for (int row=0; row < height; row++) {
-        int colsum = 0;
-        int colsum2 = 0;
+        int rowsum = 0;
+        int rowsum2 = 0;
+        
+        /* The strategy here is to keep a sum of the current row that is calculated.
+         * The values of the fields in the rows are continuously added to the rowsum
+         * variable, and the columns are taken care of by looking earlier in the array
+         * as we're building it (we look in the previous row at the same column). This
+         * eventually yields the integral image.
+         * 
+         * Also, we keep an integral image over all the squares of the pixel values. This
+         * is used for the standard deviations in the normalization stage when the feature
+         * sums are compared to their thresholds.
+         */
         
         for(int col=0; col < width; col++) {
-            colsum += i(col, row);
-            colsum2 += i(col, row)*i(col, row);
+            rowsum += i(col, row);
+            rowsum2 += i(col, row)*i(col, row);
             
             if (row > 0) {
-                _iiArray[row*width + col] = colsum + ii(col, row-1);
-                _ii2Array[row*width + col] = colsum2 + ii2(col, row-1);
+                
+                _iiArray[row*width + col] = rowsum + ii(col, row-1);
+                _ii2Array[row*width + col] = rowsum2 + ii2(col, row-1);
             } else {
-                _iiArray[row*width + col] = colsum;
-                _ii2Array[row*width + col] = colsum2;
+                _iiArray[row*width + col] = rowsum;
+                _ii2Array[row*width + col] = rowsum2;
             }
         }
     }
