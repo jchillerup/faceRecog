@@ -16,7 +16,7 @@ class faceApp : public ofBaseApp{
         ofTrueTypeFont uiHeadingFont;
         ofxUICanvas *gui;
         ofxUILabel *fpsLabel;
-        ofImage grabbedImage;
+        ofImage haarInput;
         JCHaarFinder * haarFinder;
 
         bool showOverlays = true;
@@ -28,6 +28,7 @@ class faceApp : public ofBaseApp{
         bool frameNew;
         ofImage * probeImage;
         bool useWebcam;
+        float scale;
         int curImage;
         int imageCount;
         ofImage * images;
@@ -49,4 +50,6 @@ class faceApp : public ofBaseApp{
 		void exit();
 		void guiEvent(ofxUIEventArgs &e);
 		void doHaarStuff();
+		
+		inline float constrain(float amount, float min, float max);
 };

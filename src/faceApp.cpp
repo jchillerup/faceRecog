@@ -30,6 +30,7 @@ void faceApp::setup(){
     gui->addWidgetDown(new ofxUIToggle(20, 20, false, "use webcam"));
     gui->addWidgetDown(new ofxUISlider(250, 24, -1, 1, 0, "brightness adjustment"));
     gui->addWidgetDown(new ofxUISlider(250, 24, -1, 1, 0, "contrast adjustment"));
+    gui->addWidgetDown(new ofxUISlider(250, 24, 0.5, 1.5, 1, "scale adjustment"));
     gui->addWidgetDown(new ofxUISpacer(0, 25));
     gui->addWidgetDown(new ofxUILabel("values", OFX_UI_FONT_LARGE));
     gui->addWidgetDown(fpsLabel);
@@ -56,6 +57,8 @@ void faceApp::setup(){
     frameNew = true;
     useWebcam = false;
     curImage = 0;
+    
+    scale = 0.0;
 }
 
 //--------------------------------------------------------------
@@ -71,6 +74,7 @@ void faceApp::update(){
             probeImage = new ofImage();
             probeImage->setFromPixels(videoGrabber.getPixels(), videoGrabber.getWidth(), videoGrabber.getHeight(), OF_IMAGE_COLOR);
         } else {
+            probeImage = new ofImage();
             probeImage->setFromPixels(images[curImage].getPixels(), images[curImage].getWidth(), images[curImage].getHeight(), OF_IMAGE_COLOR);
         }
     
@@ -86,8 +90,8 @@ void faceApp::draw(){
     videoGrabber.draw(0,0);
     ofTranslate(0, videoGrabber.getHeight()+5, 0);
         
-    if (probeImage->isAllocated()) {
-        probeImage->draw(0, 0);
+    if (haarInput.isAllocated()) {
+        haarInput.draw(0, 0);
     }   
     
     if (showOverlays) {
@@ -115,9 +119,9 @@ void faceApp::doHaarStuff() {
     //unsigned char* rgb_pixels   = videoGrabber.getPixels();
     unsigned char* rgb_pixels = probeImage->getPixels();
     unsigned char gray_pixels[total_pixels];
-    int gray_width = -1, gray_height= -1;
-    ofImage haarInput;
-
+    
+    
+    
     for (int i = 0; i<total_pixels; i++) {
         // First, pick out a gray value from the RGB representation
         float value = 0.3*rgb_pixels[3*i+0] + 0.59*rgb_pixels[3*i+1] + 0.11*rgb_pixels[3*i+2];
@@ -132,7 +136,7 @@ void faceApp::doHaarStuff() {
         else
             value = value + ((1 - value) * brightness);
         
-        //value = (value - 0.5) * (tan ((contrast + 1) * PI/4) ) + 0.5;
+        value = constrain((value - 0.5) * (tan ((contrast + 1) * PI/4) ) + 0.5, 0, 1);
         // end copy
 
         // Map value back to [0; 255]
@@ -140,16 +144,18 @@ void faceApp::doHaarStuff() {
         
         gray_pixels[i] = (int) value;
         
-        // These should be used when scaling gets implemented.
-        gray_width = probeImage->getWidth();
-        gray_height = probeImage->getHeight();
     }
 
-    haarInput.setFromPixels(gray_pixels, gray_width, gray_height, OF_IMAGE_GRAYSCALE);
+    haarInput.setFromPixels(gray_pixels, probeImage->getWidth(), probeImage->getHeight(), OF_IMAGE_GRAYSCALE);
+    
+    haarInput.resize(probeImage->getWidth()*scale, probeImage->getHeight()*scale);
     
     haarFinder->getRectsFromImage(&haarInput);
 }
 
+inline float faceApp::constrain(float amount, float min, float max) {
+    return (amount>max)?max:((amount<min)?min:amount);
+}
 
 //--------------------------------------------------------------
 void faceApp::keyPressed(int key){    
@@ -214,16 +220,21 @@ void faceApp::guiEvent(ofxUIEventArgs &e) {
         frameNew = true;
         
         curImage = 0;
-    } else if (e.widget->getName() == "brightness adjustment" || e.widget->getName() == "contrast adjustment") {
+    } else if (e.widget->getName() == "brightness adjustment" || e.widget->getName() == "contrast adjustment" || 
+               e.widget->getName() == "scale adjustment") {
+
         float * container;
         ofxUISlider *slider = (ofxUISlider *) e.widget;
 
         if (e.widget->getName() == "brightness adjustment") {
             container = &brightness;
-        } else {
+        } else if (e.widget->getName() == "contrast adjustment"){
             container = &contrast;
+        } else if (e.widget->getName() == "scale adjustment") {
+            container = &scale;
         }
 
-        *container = slider->getValue();
+        *container = slider->getScaledValue();
+        frameNew=true;
     }
 }
