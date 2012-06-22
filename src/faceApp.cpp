@@ -7,16 +7,13 @@ void faceApp::setup(){
 
     ofBackground(200,0,0);
 
-    camWidth = 320;
-    camHeight = 240;
-
     brightness = 0;
     contrast = 0;
 
     uiFont.loadFont("FreeMono.ttf", 12, true, true);
     uiHeadingFont.loadFont("FreeMono.ttf", 18, true, true);
 
-    videoGrabber.initGrabber(camWidth, camHeight);
+    videoGrabber.initGrabber(320, 240);
 
     // set up the detector
     haarFinder = new JCHaarFinder();
@@ -30,7 +27,7 @@ void faceApp::setup(){
     fpsLabel = new ofxUILabel("what", OFX_UI_FONT_SMALL);
 
     gui->addWidgetDown(new ofxUILabel("tuneables", OFX_UI_FONT_LARGE));
-    gui->addWidgetDown(new ofxUIToggle(20, 20, true, "show overlays"));
+    gui->addWidgetDown(new ofxUIToggle(20, 20, false, "use webcam"));
     gui->addWidgetDown(new ofxUISlider(250, 24, -1, 1, 0, "brightness adjustment"));
     gui->addWidgetDown(new ofxUISlider(250, 24, -1, 1, 0, "contrast adjustment"));
     gui->addWidgetDown(new ofxUISpacer(0, 25));
@@ -42,29 +39,44 @@ void faceApp::setup(){
     ofSetWindowTitle("face detection by jens christian hillerup");
     
     probeImage = new ofImage();
-    /*
-    probeImage = new ofImage("lena.jpg");
-    camWidth = probeImage->getWidth();
-    camHeight = probeImage->getHeight();
-    */
-    frameNew = false;
+    
+    
+    ofDirectory dir("images/");
+    dir.listDir();
+ 	imageCount = dir.numFiles();
+    images = new ofImage[imageCount];
+ 	
+    for(int i = 0; i < imageCount; i++){
+        images[i].loadImage(dir.getPath(i));
+    }
+    
+    assert(imageCount > 0);
+    probeImage = &images[0];
+    
+    frameNew = true;
+    useWebcam = false;
+    curImage = 0;
 }
 
 //--------------------------------------------------------------
 void faceApp::update(){  
     
-    
     videoGrabber.grabFrame();
     
-    if (videoGrabber.isFrameNew()) {
-        probeImage->setFromPixels(videoGrabber.getPixels(), videoGrabber.getWidth(), videoGrabber.getHeight(), OF_IMAGE_COLOR);
-        frameNew = true;
-    }
-    
+    frameNew = useWebcam?videoGrabber.isFrameNew():frameNew;
     
     if (frameNew) {
+        if (useWebcam) {
+            //free(probeImage);
+            probeImage = new ofImage();
+            probeImage->setFromPixels(videoGrabber.getPixels(), videoGrabber.getWidth(), videoGrabber.getHeight(), OF_IMAGE_COLOR);
+        } else {
+            probeImage->setFromPixels(images[curImage].getPixels(), images[curImage].getWidth(), images[curImage].getHeight(), OF_IMAGE_COLOR);
+        }
+    
         doHaarStuff();
     }
+    frameNew = false;
 }
 
 //--------------------------------------------------------------
@@ -72,20 +84,19 @@ void faceApp::draw(){
     ofPushMatrix();
     ofTranslate(5, 35, 0);
     videoGrabber.draw(0,0);
-    ofTranslate(0, camHeight+5, 0);
-    
-    if (grabbedImage.isAllocated()) {
-        grabbedImage.draw(0, 0);
-    }
-
-    // Whatever the haar finder draws should be in the same translated matrix as the processed image.
-    haarFinder->draw();
+    ofTranslate(0, videoGrabber.getHeight()+5, 0);
+        
+    if (probeImage->isAllocated()) {
+        probeImage->draw(0, 0);
+    }   
     
     if (showOverlays) {
         ofNoFill();
+        
         for(int i = 0; i < haarFinder->blobs.size(); i++) {
             ofRect( haarFinder->blobs[i].boundingRect );
         }
+        
     }
 
     ofPopMatrix(); // from processedImage to videoGrabber
@@ -99,11 +110,13 @@ void faceApp::draw(){
 
 void faceApp::doHaarStuff() {
     // get pixels as char array and make a grayscale buffer from them
-    int total_pixels = camWidth*camHeight;
+    int total_pixels = probeImage->getWidth() * probeImage->getHeight();
 
     //unsigned char* rgb_pixels   = videoGrabber.getPixels();
     unsigned char* rgb_pixels = probeImage->getPixels();
     unsigned char gray_pixels[total_pixels];
+    int gray_width = -1, gray_height= -1;
+    ofImage haarInput;
 
     for (int i = 0; i<total_pixels; i++) {
         // First, pick out a gray value from the RGB representation
@@ -126,17 +139,27 @@ void faceApp::doHaarStuff() {
         value *= 255;
         
         gray_pixels[i] = (int) value;
+        
+        // These should be used when scaling gets implemented.
+        gray_width = probeImage->getWidth();
+        gray_height = probeImage->getHeight();
     }
 
-    grabbedImage.setFromPixels(gray_pixels, camWidth, camHeight, OF_IMAGE_GRAYSCALE);
+    haarInput.setFromPixels(gray_pixels, gray_width, gray_height, OF_IMAGE_GRAYSCALE);
     
-    haarFinder->getRectsFromImage(&grabbedImage);
+    haarFinder->getRectsFromImage(&haarInput);
 }
 
 
 //--------------------------------------------------------------
-void faceApp::keyPressed(int key){
-    
+void faceApp::keyPressed(int key){    
+    if (key == OF_KEY_RIGHT) {
+        curImage = (curImage +1) % imageCount;
+        frameNew = true;
+    } else if (key == OF_KEY_LEFT) {
+        curImage = (imageCount + curImage - 1) % imageCount;
+        frameNew = true;
+    }
 }
 
 //--------------------------------------------------------------
@@ -156,7 +179,7 @@ void faceApp::mouseDragged(int x, int y, int button){
 
 //--------------------------------------------------------------
 void faceApp::mousePressed(int x, int y, int button){
-
+    
 }
 
 //--------------------------------------------------------------
@@ -184,10 +207,13 @@ void faceApp::exit() {
 }
 
 void faceApp::guiEvent(ofxUIEventArgs &e) {
-    if(e.widget->getName() == "show overlays")
+    if(e.widget->getName() == "use webcam")
     {
         ofxUIToggle *toggle = (ofxUIToggle *) e.widget;
-        showOverlays = toggle->getValue();
+        useWebcam = toggle->getValue();
+        frameNew = true;
+        
+        curImage = 0;
     } else if (e.widget->getName() == "brightness adjustment" || e.widget->getName() == "contrast adjustment") {
         float * container;
         ofxUISlider *slider = (ofxUISlider *) e.widget;

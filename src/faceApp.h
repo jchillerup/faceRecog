@@ -27,6 +27,10 @@ class faceApp : public ofBaseApp{
         float contrast;
         bool frameNew;
         ofImage * probeImage;
+        bool useWebcam;
+        int curImage;
+        int imageCount;
+        ofImage * images;
 
 	public:
 		void setup();

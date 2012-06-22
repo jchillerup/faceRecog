@@ -19,7 +19,6 @@ JCHaarFinder::JCHaarFinder()
 void JCHaarFinder::loadFeatures(char* fileName) {
     ofxXmlSettings featureXML;
     featureXML.loadFile(fileName);
-    //cascade casc;
 
     ofLog(OF_LOG_NOTICE, "Loading cascade...");
 
@@ -171,7 +170,7 @@ vector<ofxCvBlob> JCHaarFinder::getRectsFromImage(ofImage* inputImage) {
                         
                         float mean   = ((float) (ii(px2, py2)  + ii(px1, py1)  - ii(px1, py2)  - ii(px2, py1)))  / window_area;
                         float stddev = sqrt((ii2(px2, py2) + ii2(px1, py1) - ii2(px1, py2) - ii2(px2, py1)) / window_area - mean*mean);
-                        
+
                         // *** LOOPING OVER RECTANGLES
                         for (int rectangleIdx = 0; rectangleIdx < f->rectangles.size(); rectangleIdx++) {
                             featureRect* r = & ( f->rectangles.at(rectangleIdx));

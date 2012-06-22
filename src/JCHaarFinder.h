@@ -51,6 +51,7 @@ class JCHaarFinder
         int tmp_ii;
         ofxCvBlob makeBlob(int x, int y, int w, int h);
         cascade casc;
+        ofDirectory directory;
 
 };
 
